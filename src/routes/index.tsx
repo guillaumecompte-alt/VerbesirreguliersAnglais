@@ -5,10 +5,10 @@ import { VERBS, type Verb } from "@/lib/verbs";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Irregular Verbs 5e — Flashcards" },
-      { name: "description", content: "Apprends les 75 verbes irréguliers anglais de 5ème avec des cartes à retourner et la prononciation." },
-      { property: "og:title", content: "Irregular Verbs 5e — Flashcards" },
-      { property: "og:description", content: "Cartes à retourner et prononciation pour les verbes irréguliers anglais." },
+      { title: "Irregular Verbs — Révision d’anglais" },
+      { name: "description", content: "Révise les 75 verbes irréguliers anglais de 5e avec des flashcards interactives et la prononciation." },
+      { property: "og:title", content: "Irregular Verbs — Révision d’anglais" },
+      { property: "og:description", content: "Flashcards et prononciation pour mémoriser les verbes irréguliers anglais." },
     ],
   }),
   component: Index,
@@ -52,29 +52,74 @@ function Index() {
   }, [selected]);
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="mx-auto max-w-5xl px-4 pt-8 pb-4 text-center">
-        <h1 className="font-display text-4xl md:text-5xl text-foreground">Irregular Verbs</h1>
-        <p className="mt-1 text-muted-foreground">Les 75 verbes irréguliers de 5ème</p>
-        <nav className="mt-6 inline-flex rounded-full bg-card p-1 shadow-soft border border-border">
-          {(["choose", "train"] as const).map((t) => (
-            <button
-              key={t}
-              onClick={() => setTab(t)}
-              className={`rounded-full px-5 py-2 font-semibold transition ${tab === t ? "bg-primary text-primary-foreground" : "text-foreground hover:bg-muted"}`}
-            >
-              {t === "choose" ? `Choix des verbes (${selected.size})` : "Entraînement"}
-            </button>
-          ))}
-        </nav>
+    <div className="app-shell">
+      <div className="app-ambient app-ambient-violet" aria-hidden="true" />
+      <div className="app-ambient app-ambient-teal" aria-hidden="true" />
+
+      <header className="app-topbar">
+        <div className="app-brand">
+          <div className="app-brand-mark" aria-hidden="true">V.</div>
+          <div>
+            <div className="app-brand-name">VERB<span>LAB</span></div>
+            <div className="app-brand-subtitle">ENGLISH · RÉVISION</div>
+          </div>
+        </div>
+        <div className="header-pill">ANGLAIS <span aria-hidden="true">/</span> 5ᵉ</div>
       </header>
-      <main className="mx-auto max-w-5xl px-4 pb-16">
+
+      <section className="app-hero">
+        <div className="hero-copy-block">
+          <div className="eyebrow">TON ESPACE DE RÉVISION</div>
+          <h1>Irregular <span>Verbs.</span></h1>
+          <p className="hero-description">
+            Mémorise les verbes irréguliers à ton rythme. Choisis ceux à travailler,
+            retourne les cartes et écoute leur prononciation en anglais.
+          </p>
+          <div className="hero-metrics">
+            <div className="hero-metric"><strong>{VERBS.length}</strong> verbes à réviser</div>
+            <div className="hero-metric"><strong>{selected.size}</strong> sélectionnés</div>
+            <div className="hero-metric"><span aria-hidden="true">♫</span> prononciation audio</div>
+          </div>
+        </div>
+        <div className="hero-illustration" aria-hidden="true">
+          <div className="hero-illustration-inner">
+            <span className="hero-letter">A</span>
+            <span className="hero-letter">B</span>
+          </div>
+        </div>
+      </section>
+
+      <main className="app-main">
+        <nav className="session-tabs" aria-label="Étapes de révision">
+          <button
+            type="button"
+            onClick={() => setTab("choose")}
+            className={`session-tab ${tab === "choose" ? "active" : ""}`}
+            aria-current={tab === "choose" ? "step" : undefined}
+          >
+            Choix des verbes <span className="tab-count">{selected.size}</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setTab("train")}
+            className={`session-tab ${tab === "train" ? "active" : ""}`}
+            aria-current={tab === "train" ? "step" : undefined}
+          >
+            Entraînement <span className="tab-count">↗</span>
+          </button>
+        </nav>
+
         {tab === "choose" ? (
           <Choose selected={selected} setSelected={setSelected} onStart={() => setTab("train")} />
         ) : (
           <Train selected={selected} onBack={() => setTab("choose")} />
         )}
       </main>
+
+      <footer className="app-footer">
+        <span>LE HUB<span aria-hidden="true">.</span> · APPRENDRE À SON RYTHME</span>
+        <span><strong>{selected.size}</strong> verbe{selected.size > 1 ? "s" : ""} sélectionné{selected.size > 1 ? "s" : ""}</span>
+      </footer>
     </div>
   );
 }
@@ -85,47 +130,80 @@ function Choose({ selected, setSelected, onStart }: { selected: Set<number>; set
     s.has(i) ? s.delete(i) : s.add(i);
     setSelected(s);
   };
+
   return (
-    <div>
-      <div className="mb-4 flex flex-wrap items-center justify-center gap-2">
-        <button className="btn-outline" onClick={() => setSelected(new Set(VERBS.map((_, i) => i)))}>Tout cocher</button>
-        <button className="btn-outline" onClick={() => setSelected(new Set())}>Tout décocher</button>
-        <button className="btn-primary" disabled={!selected.size} onClick={onStart}>S'entraîner →</button>
+    <section className="choose-panel" aria-labelledby="choose-heading">
+      <div className="section-intro">
+        <div>
+          <p className="section-eyebrow">ÉTAPE 01 · PRÉPARATION</p>
+          <h2 id="choose-heading">Compose ton paquet</h2>
+          <p className="section-description">Sélectionne les verbes que tu veux mémoriser pendant cette session.</p>
+        </div>
+        <div className="selected-counter" aria-live="polite">
+          <strong>{String(selected.size).padStart(2, "0")}</strong>
+          <span>VERBES<br />SÉLECTIONNÉS</span>
+        </div>
       </div>
-      <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+
+      <div className="choose-toolbar">
+        <p className="toolbar-hint">Astuce : commence par quelques verbes, puis agrandis ta sélection.</p>
+        <div className="toolbar-actions">
+          <button type="button" className="btn-outline" onClick={() => setSelected(new Set(VERBS.map((_, i) => i)))}>Tout cocher</button>
+          <button type="button" className="btn-outline" onClick={() => setSelected(new Set())}>Tout décocher</button>
+          <button type="button" className="btn-primary" disabled={!selected.size} onClick={onStart}>S'entraîner <span aria-hidden="true">→</span></button>
+        </div>
+      </div>
+
+      <div className="verb-grid">
         {VERBS.map((v, i) => (
-          <label key={i} className={`flex cursor-pointer items-center gap-3 rounded-xl border p-3 transition ${selected.has(i) ? "border-primary bg-accent" : "border-border bg-card hover:bg-muted"}`}>
-            <input type="checkbox" checked={selected.has(i)} onChange={() => toggle(i)} className="h-5 w-5 accent-[var(--primary)]" />
-            <span className="w-6 text-sm text-muted-foreground">{i + 1}.</span>
-            <span className="font-semibold text-foreground">{v.base}</span>
-            <span className="ml-auto truncate text-sm text-muted-foreground">{v.fr}</span>
+          <label key={i} className={`verb-option ${selected.has(i) ? "is-selected" : ""}`}>
+            <input
+              type="checkbox"
+              checked={selected.has(i)}
+              onChange={() => toggle(i)}
+              className="verb-checkbox"
+              aria-label={`Sélectionner ${v.base}`}
+            />
+            <span className="verb-index">{String(i + 1).padStart(2, "0")}</span>
+            <span className="verb-base">{v.base}</span>
+            <span className="verb-meaning">{v.fr}</span>
           </label>
         ))}
       </div>
-    </div>
+    </section>
   );
 }
 
 function Train({ selected, onBack }: { selected: Set<number>; onBack: () => void }) {
   const [seed, setSeed] = useState(0);
-  const deck = useMemo(() => shuffle([...selected].sort((a, b) => a - b).map((i) => VERBS[i])), [selected, seed]);
+  const deck = useMemo(() => shuffle([...selected].sort((a, b) => a - b).map((i) => VERBS[i]!), [selected, seed]);
   const [idx, setIdx] = useState(0);
   const [flipped, setFlipped] = useState(false);
 
   if (!deck.length)
     return (
-      <div className="text-center">
-        <p className="text-muted-foreground">Aucun verbe sélectionné.</p>
-        <button className="btn-primary mt-4" onClick={onBack}>Choisir des verbes</button>
+      <div className="train-view">
+        <div className="empty-training">
+          <div className="completion-icon" aria-hidden="true">＋</div>
+          <p className="section-eyebrow">TON PAQUET EST VIDE</p>
+          <h2 className="completion-title">Choisis tes premiers verbes</h2>
+          <p className="completion-copy">Sélectionne au moins un verbe pour lancer une session de flashcards.</p>
+          <button type="button" className="btn-primary" onClick={onBack}>Choisir des verbes <span aria-hidden="true">→</span></button>
+        </div>
       </div>
     );
 
   if (idx >= deck.length)
     return (
-      <div className="text-center">
-        <p className="font-display text-3xl text-foreground">Bravo ! 🎉</p>
-        <p className="mt-2 text-muted-foreground">Tu as révisé {deck.length} verbe{deck.length > 1 ? "s" : ""}.</p>
-        <button className="btn-primary mt-6" onClick={() => { setSeed(seed + 1); setIdx(0); setFlipped(false); }}>Recommencer</button>
+      <div className="train-view">
+        <div className="completion-card">
+          <div className="completion-icon" aria-hidden="true">✓</div>
+          <p className="section-eyebrow">SESSION TERMINÉE</p>
+          <h2 className="completion-title">Bravo !</h2>
+          <p className="completion-copy">Tu as révisé {deck.length} verbe{deck.length > 1 ? "s" : ""}. Continue comme ça !</p>
+          <button type="button" className="btn-primary" onClick={() => { setSeed(seed + 1); setIdx(0); setFlipped(false); }}>Mélanger et recommencer <span aria-hidden="true">↻</span></button>
+          <div><button type="button" className="btn-outline mt-3" onClick={onBack}>Modifier ma sélection</button></div>
+        </div>
       </div>
     );
 
@@ -137,35 +215,50 @@ function Train({ selected, onBack }: { selected: Set<number>; onBack: () => void
   const go = (d: number) => { setFlipped(false); setIdx(Math.max(0, idx + d)); };
 
   return (
-    <div className="flex flex-col items-center">
-      <p className="mb-3 text-sm font-semibold text-muted-foreground">Carte {idx + 1} / {deck.length}</p>
-      <div className="h-2 w-full max-w-md overflow-hidden rounded-full bg-muted mb-6">
-        <div className="h-full bg-primary transition-all" style={{ width: `${((idx + 1) / deck.length) * 100}%` }} />
+    <section className="train-view" aria-label="Entraînement par flashcards">
+      <div className="training-head">
+        <div>
+          <div className="training-mode">MODE FLASHCARDS</div>
+          <p className="section-description">Réfléchis, retourne la carte, puis répète les trois formes à voix haute.</p>
+        </div>
+        <button type="button" className="btn-outline" onClick={onBack}><span aria-hidden="true">←</span> Modifier la sélection</button>
       </div>
-      <button onClick={flip} className="flip-scene h-72 w-full max-w-md" aria-label="Retourner la carte">
+
+      <div className="training-progress-row">
+        <span>CARTE <strong>{String(idx + 1).padStart(2, "0")}</strong> / {String(deck.length).padStart(2, "0")}</span>
+        <span>{Math.round(((idx + 1) / deck.length) * 100)} % terminé</span>
+      </div>
+      <div className="training-progress" aria-label={`Progression : ${Math.round(((idx + 1) / deck.length) * 100)} pour cent`}>
+        <div className="training-progress-fill" style={{ width: `${((idx + 1) / deck.length) * 100}%` }} />
+      </div>
+
+      <button type="button" onClick={flip} className="flip-scene training-card-button verb-flashcard" aria-label="Retourner la carte">
         <div className={`flip-card ${flipped ? "is-flipped" : ""}`}>
-          <div className="flip-face bg-card border border-border">
-            <span className="text-sm uppercase tracking-widest text-muted-foreground">En anglais ?</span>
-            <span className="mt-3 font-display text-4xl text-foreground">{v.fr}</span>
-            <span className="mt-6 text-sm text-muted-foreground">Clique pour retourner</span>
+          <div className="flip-face flip-front">
+            <span className="face-badge">TRADUCTION FRANÇAISE</span>
+            <span className="face-word">{v.fr}</span>
+            <span className="face-hint">Pense au verbe anglais, puis retourne la carte</span>
           </div>
-          <div className="flip-face flip-back bg-primary text-primary-foreground">
-            <div className="grid w-full grid-cols-3 gap-2 text-center">
-              {[["Base", v.base], ["Prétérit", v.preterit], ["Participe", v.participle]].map(([l, w]) => (
-                <div key={l}>
-                  <div className="text-xs uppercase tracking-wider opacity-80">{l}</div>
-                  <div className="mt-2 font-display text-2xl md:text-3xl break-words">{w}</div>
+          <div className="flip-face flip-back verb-answer-face">
+            <div className="answer-intro">Les trois formes</div>
+            <div className="verb-forms">
+              {[["Base verbale", v.base], ["Prétérit", v.preterit], ["Participe passé", v.participle]].map(([l, w]) => (
+                <div className="verb-form" key={l}>
+                  <div className="verb-form-label">{l}</div>
+                  <div className="verb-form-word">{w}</div>
                 </div>
               ))}
             </div>
+            <span className="face-hint">Écoute et répète les formes en anglais</span>
           </div>
         </div>
       </button>
-      <div className="mt-6 flex gap-3">
-        <button className="btn-outline" disabled={idx === 0} onClick={() => go(-1)}>← Précédente</button>
-        <button className="btn-outline" onClick={() => speak(v)}>🔊 Écouter</button>
-        <button className="btn-primary" onClick={() => go(1)}>Suivante →</button>
+
+      <div className="training-actions">
+        <button type="button" className="btn-outline" disabled={idx === 0} onClick={() => go(-1)}><span aria-hidden="true">←</span> Précédente</button>
+        <button type="button" className="btn-outline" onClick={() => speak(v)}><span aria-hidden="true">♫</span> Écouter</button>
+        <button type="button" className="btn-primary" onClick={() => go(1)}>Suivante <span aria-hidden="true">→</span></button>
       </div>
-    </div>
+    </section>
   );
 }
