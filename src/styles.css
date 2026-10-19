@@ -179,6 +179,8 @@
   .flip-scene {
     perspective: 1200px;
     display: block;
+    width: 100%;
+    cursor: pointer;
     border-radius: 1.7rem;
     outline: none;
   }
@@ -430,7 +432,7 @@
 .training-progress-row span:last-child { color: oklch(0.79 0.12 190); }
 .training-progress { height: .45rem; width: 100%; overflow: hidden; border-radius: 99px; background: oklch(1 0 0 / .075); margin-bottom: 1.8rem; }
 .training-progress-fill { height: 100%; border-radius: inherit; background: linear-gradient(90deg, oklch(0.67 0.17 285), oklch(0.77 0.13 190)); box-shadow: 0 0 18px oklch(0.72 0.14 285 / .28); transition: width .25s ease; }
-.training-card-button { height: 21rem; max-width: 42rem; }
+.training-card-button { width: 100%; height: 21rem; max-width: 42rem; margin-inline: auto; }
 .verb-flashcard .flip-face { padding: clamp(1rem, 4vw, 2.5rem); border: 1px solid oklch(0.9 0.02 265 / .13); text-align: center; }
 .verb-flashcard .flip-front { background: radial-gradient(ellipse at 50% 0%, oklch(0.38 0.075 280 / .42), transparent 60%), linear-gradient(145deg, oklch(0.24 0.04 264), oklch(0.2 0.035 264)); }
 .face-badge { display: inline-flex; align-items: center; gap: .5rem; padding: .45rem .7rem; border: 1px solid oklch(0.8 0.12 285 / .23); border-radius: 999px; color: oklch(0.81 0.1 285); background: oklch(0.5 0.13 285 / .12); font-size: .62rem; font-weight: 900; letter-spacing: .12em; text-transform: uppercase; }
@@ -440,7 +442,7 @@
 .answer-intro { margin-bottom: 1.4rem; color: oklch(0.83 0.1 190); font-size: .66rem; font-weight: 900; letter-spacing: .18em; text-transform: uppercase; }
 .verb-forms { display: grid; width: 100%; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .6rem; }
 .verb-form { min-width: 0; padding: .9rem .35rem; border: 1px solid oklch(0.9 0.02 265 / .14); border-radius: .9rem; background: oklch(0.13 0.04 264 / .32); }
-.verb-form-label { color: oklch(0.81 0.84 190 / .8); font-size: .64rem; font-weight: 850; letter-spacing: .08em; text-transform: uppercase; }
+.verb-form-label { color: oklch(0.81 0.1 190 / .8); font-size: .64rem; font-weight: 850; letter-spacing: .08em; text-transform: uppercase; }
 .verb-form-word { margin-top: .5rem; color: oklch(0.98 0.01 250); font-family: var(--font-display); font-size: clamp(1.15rem, 3.5vw, 1.8rem); line-height: 1.1; overflow-wrap: anywhere; }
 .training-actions { display: flex; align-items: center; justify-content: center; gap: .65rem; flex-wrap: wrap; margin-top: 1.5rem; }
 .training-actions .btn-primary, .training-actions .btn-outline { min-height: 2.8rem; }
