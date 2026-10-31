@@ -365,8 +365,7 @@ function LevelPips({ box, status }: { box: number; status: VerbStatus }) {
 
 /* ───────────────────────────── Choix des verbes ──────────────────────────── */
 
-type Filter = "all" | VerbStatus;
-const FILTERS: Filter[] = ["all", "due", "learning", "mastered", "new"];
+const FILTERS: VerbStatus[] = ["due", "learning", "mastered", "new"];
 
 function Choose({
   selected,
@@ -389,7 +388,16 @@ function Choose({
   onStartWith: (indices: number[]) => void;
   onReset: () => void;
 }) {
-  const [filter, setFilter] = useState<Filter>("all");
+  /** Catégories affichées ; vide = tous les verbes. Plusieurs peuvent se cumuler. */
+  const [filters, setFilters] = useState<Set<VerbStatus>>(new Set());
+  const all = filters.size === 0;
+  const toggleFilter = (f: VerbStatus) => {
+    const next = new Set(filters);
+    if (next.has(f)) next.delete(f);
+    else next.add(f);
+    // Toutes les catégories cochées revient à « Tous ».
+    setFilters(next.size === FILTERS.length ? new Set() : next);
+  };
 
   const items = VERBS.map((v, i) => ({
     v,
@@ -397,8 +405,7 @@ function Choose({
     p: progress.verbs[v.base],
     status: statusOf(progress.verbs[v.base], now),
   }));
-  const visible =
-    filter === "all" ? items : items.filter((it) => it.status === filter);
+  const visible = all ? items : items.filter((it) => filters.has(it.status));
 
   const toggle = (i: number) => {
     const s = new Set(selected);
@@ -452,32 +459,36 @@ function Choose({
           role="group"
           aria-label="Filtrer par progression"
         >
-          {FILTERS.map((f) => {
-            const n = f === "all" ? VERBS.length : counts[f];
-            return (
-              <button
-                key={f}
-                type="button"
-                data-status={f}
-                className={`status-filter ${filter === f ? "active" : ""}`}
-                aria-pressed={filter === f}
-                onClick={() => setFilter(f)}
-              >
-                {f !== "all" && (
-                  <span className="status-dot" aria-hidden="true" />
-                )}
-                {f === "all" ? "Tous" : STATUS_LABEL[f]}
-                <span className="status-filter-count">{n}</span>
-              </button>
-            );
-          })}
+          <button
+            type="button"
+            className={`status-filter ${all ? "active" : ""}`}
+            aria-pressed={all}
+            onClick={() => setFilters(new Set())}
+          >
+            Tous
+            <span className="status-filter-count">{VERBS.length}</span>
+          </button>
+          {FILTERS.map((f) => (
+            <button
+              key={f}
+              type="button"
+              data-status={f}
+              className={`status-filter ${filters.has(f) ? "active" : ""}`}
+              aria-pressed={filters.has(f)}
+              onClick={() => toggleFilter(f)}
+            >
+              <span className="status-dot" aria-hidden="true" />
+              {STATUS_LABEL[f]}
+              <span className="status-filter-count">{counts[f]}</span>
+            </button>
+          ))}
         </div>
 
         <div className="choose-toolbar">
           <p className="toolbar-hint">
-            {filter === "all"
-              ? "Astuce : commence par quelques verbes, puis agrandis ta sélection."
-              : `${plural(visible.length, "verbe")} dans cette catégorie.`}
+            {all
+              ? "Astuce : combine plusieurs catégories, par exemple « À revoir », « En cours » et « Maîtrisé » pour une révision générale."
+              : `${plural(visible.length, "verbe")} affiché${visible.length > 1 ? "s" : ""}.`}
           </p>
           <div className="toolbar-actions">
             <button
@@ -486,16 +497,15 @@ function Choose({
               disabled={!visible.length}
               onClick={() => setVisible(true)}
             >
-              {filter === "all" ? "Tout cocher" : "Cocher la liste"}
+              {all ? "Tout cocher" : "Cocher la liste"}
             </button>
             <button
               type="button"
               className="btn-outline"
-              onClick={() =>
-                filter === "all" ? setSelected(new Set()) : setVisible(false)
-              }
+              disabled={!visible.some((it) => selected.has(it.i))}
+              onClick={() => setVisible(false)}
             >
-              {filter === "all" ? "Tout décocher" : "Décocher la liste"}
+              {all ? "Tout décocher" : "Décocher la liste"}
             </button>
             <button
               type="button"
@@ -535,7 +545,9 @@ function Choose({
           </div>
         ) : (
           <p className="empty-filter">
-            Aucun verbe dans cette catégorie pour l'instant.
+            Aucun verbe dans{" "}
+            {filters.size > 1 ? "ces catégories" : "cette catégorie"} pour
+            l'instant.
           </p>
         )}
       </section>
