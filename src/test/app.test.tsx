@@ -46,3 +46,45 @@ describe("VerbApp", () => {
     expect(screen.getByText("03")).toBeInTheDocument();
   });
 });
+
+describe("changement d'appareil", () => {
+  beforeEach(() => localStorage.clear());
+
+  it("transfère la progression grâce au code", async () => {
+    const now = Date.now();
+    localStorage.setItem(
+      "iv-progress-v1",
+      JSON.stringify({
+        verbs: {
+          go: {
+            box: 5,
+            due: now + 30 * 86400000,
+            seen: 5,
+            known: 5,
+            last: now,
+          },
+        },
+        days: [],
+      }),
+    );
+    const first = render(<VerbApp />);
+    await screen.findByText("TA PROGRESSION");
+    fireEvent.click(screen.getByRole("button", { name: /Changer d'appareil/ }));
+    const code = document.getElementById("transfer-code")!.textContent!;
+    first.unmount();
+
+    // « Autre appareil » : navigateur vierge.
+    localStorage.clear();
+    render(<VerbApp />);
+    await screen.findByText("TA PROGRESSION");
+    fireEvent.click(screen.getByRole("button", { name: /Changer d'appareil/ }));
+    fireEvent.change(screen.getByLabelText(/colle ou recopie/), {
+      target: { value: code.toLowerCase() },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Récupérer" }));
+    expect(
+      screen.getByText(/Progression récupérée : 1 verbe/),
+    ).toBeInTheDocument();
+    expect(localStorage.getItem("iv-progress-v1")).toContain('"box":5');
+  });
+});

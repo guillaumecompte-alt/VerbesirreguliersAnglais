@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 
+import { TransferPanel } from "@/components/verbs/TransferPanel";
 import { useProgress } from "@/hooks/use-progress";
 import {
   countByStatus,
@@ -51,7 +52,7 @@ export function VerbApp() {
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [selectionLoaded, setSelectionLoaded] = useState(false);
   const [session, setSession] = useState(0);
-  const { progress, loaded, answer, reset } = useProgress();
+  const { progress, loaded, answer, reset, replace } = useProgress();
 
   useEffect(() => {
     try {
@@ -172,6 +173,7 @@ export function VerbApp() {
             onStart={startTraining}
             onStartWith={startWith}
             onReset={reset}
+            onReplace={replace}
           />
         ) : (
           <Train
@@ -206,12 +208,14 @@ function ProgressPanel({
   counts,
   onStartWith,
   onReset,
+  onReplace,
 }: {
   progress: ProgressState;
   now: number;
   counts: Record<VerbStatus, number>;
   onStartWith: (indices: number[]) => void;
   onReset: () => void;
+  onReplace: (state: ProgressState) => void;
 }) {
   const total = VERBS.length;
   const pct = Math.round((counts.mastered / total) * 100);
@@ -304,6 +308,7 @@ function ProgressPanel({
             </p>
           )}
         </div>
+        <TransferPanel progress={progress} now={now} onReplace={onReplace} />
         {hasHistory &&
           (confirmReset ? (
             <div
@@ -377,6 +382,7 @@ function Choose({
   onStart,
   onStartWith,
   onReset,
+  onReplace,
 }: {
   selected: Set<number>;
   setSelected: (s: Set<number>) => void;
@@ -387,6 +393,7 @@ function Choose({
   onStart: () => void;
   onStartWith: (indices: number[]) => void;
   onReset: () => void;
+  onReplace: (state: ProgressState) => void;
 }) {
   /** Catégories affichées ; vide = tous les verbes. Plusieurs peuvent se cumuler. */
   const [filters, setFilters] = useState<Set<VerbStatus>>(new Set());
@@ -431,6 +438,7 @@ function Choose({
           counts={counts}
           onStartWith={onStartWith}
           onReset={onReset}
+          onReplace={onReplace}
         />
       )}
 

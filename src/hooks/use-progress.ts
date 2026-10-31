@@ -40,5 +40,8 @@ export function useProgress() {
 
   const reset = useCallback(() => setState(emptyProgress()), []);
 
-  return { progress: state, loaded, answer, reset };
+  /** Remplace toute la progression (import d'un code de sauvegarde). */
+  const replace = useCallback((next: ProgressState) => setState(next), []);
+
+  return { progress: state, loaded, answer, reset, replace };
 }

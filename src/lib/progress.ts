@@ -46,7 +46,7 @@ export const emptyProgress = (): ProgressState => ({ verbs: {}, days: [] });
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
-function startOfDay(t: number) {
+export function startOfDay(t: number) {
   const d = new Date(t);
   d.setHours(0, 0, 0, 0);
   return d.getTime();
