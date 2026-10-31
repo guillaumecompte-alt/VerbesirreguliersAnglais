@@ -1,0 +1,11 @@
+// Site statique servi par Cloudflare Workers (verbes.outilotheque.fr).
+// Le domaine personnalisé est rattaché au Worker dans le tableau de bord Cloudflare.
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "verbesirreguliers",
+  "compatibility_date": "2026-10-19",
+  "assets": {
+    "directory": "./dist",
+    "not_found_handling": "single-page-application"
+  }
+}

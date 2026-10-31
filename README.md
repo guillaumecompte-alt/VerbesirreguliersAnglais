@@ -1,29 +1,38 @@
-# Welcome to your Lovable project
+# Verbes irréguliers anglais — 5ᵉ
 
-This project was built with [Lovable](https://lovable.dev).
+Application de révision des 75 verbes irréguliers anglais du programme de 5ᵉ :
+flashcards, prononciation et suivi de progression par révision espacée.
 
-## Build with Lovable
+En ligne : <https://verbes.outilotheque.fr>
 
-Open your project in the [Lovable editor](https://lovable.dev) and keep building.
+## Fonctionnement
 
-- **Ship faster**: describe what you want to build and Lovable handles the code.
-- **Stay in sync**: connect the project to GitHub and every change made in Lovable is committed straight to your repository.
-- **Full ownership**: this code is yours. Push to your repository and your changes sync back into Lovable, ready for your next prompt.
+- L'élève compose son paquet de verbes, retourne chaque carte puis indique s'il savait.
+- Les verbes sus reviennent de plus en plus tard (1, 3, 7, 14 puis 30 jours) ;
+  ceux qui sont ratés reviennent dans la même session.
+- La progression est enregistrée dans le navigateur de l'élève (`localStorage`) :
+  aucun compte, aucune donnée envoyée à un serveur.
 
-## Development
+## Développement
 
-Prefer working locally? You need Node.js and npm — [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
+Il faut [Bun](https://bun.sh) (ou Node.js et npm).
 
 ```sh
-git clone <this-repository-url>
-cd <repository-name>
-npm i
-npm run dev
+bun install
+bun run dev      # serveur de développement
+bun run test     # tests
+bun run build    # site statique dans dist/
 ```
 
-## Built with
+## Organisation du code
 
-- TanStack Start
-- TypeScript
-- React
-- Tailwind CSS
+- `src/lib/verbs.ts` — la liste des verbes (base, prétérit, participe passé, traduction).
+- `src/lib/progress.ts` — logique de révision espacée, testée dans `src/test/`.
+- `src/components/verbs/VerbApp.tsx` — l'interface.
+- `src/styles.css`, `src/progress.css` — les styles.
+
+## Mise en ligne
+
+Le site est un site statique servi par Cloudflare Workers (`wrangler.jsonc`).
+Chaque push sur `main` déclenche automatiquement un build (`bun run build`)
+puis un déploiement (`npx wrangler deploy`) via Cloudflare Workers Builds.

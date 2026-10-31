@@ -1,4 +1,9 @@
-export type Verb = { base: string; preterit: string; participle: string; fr: string };
+export type Verb = {
+  base: string;
+  preterit: string;
+  participle: string;
+  fr: string;
+};
 
 const raw = `be|was|been|être
 beat|beat|beaten|battre
