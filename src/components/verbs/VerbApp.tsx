@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 
+import { HelpButton } from "@/components/verbs/HelpDialog";
 import { TransferPanel } from "@/components/verbs/TransferPanel";
 import { useProgress } from "@/hooks/use-progress";
 import {
@@ -115,11 +116,7 @@ export function VerbApp() {
           <h1>
             Irregular <span>Verbs.</span>
           </h1>
-          <p className="hero-description">
-            Mémorise les verbes irréguliers à ton rythme. Note chaque carte :
-            les verbes que tu connais reviennent de moins en moins souvent, ceux
-            qui résistent reviennent jusqu'à ce que tu les saches.
-          </p>
+          <HelpButton />
           <div className="hero-metrics">
             <div className="hero-metric">
               <strong>{VERBS.length}</strong> verbes

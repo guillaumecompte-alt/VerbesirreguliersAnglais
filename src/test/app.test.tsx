@@ -130,3 +130,22 @@ describe("verbe raté pendant une session", () => {
     expect(saved()[missed]).toMatchObject({ box: 0, seen: 1 });
   });
 });
+
+describe("aide", () => {
+  it("ouvre et ferme l'explication « Comment ça marche ? »", async () => {
+    render(<VerbApp />);
+    fireEvent.click(screen.getByRole("button", { name: /Comment ça marche/ }));
+    const dialog = screen.getByRole("dialog", {
+      name: "Verbes irréguliers : comment ça marche ?",
+    });
+    expect(dialog).toHaveTextContent("Ce deuxième essai sert à t'entraîner");
+    expect(dialog).toHaveTextContent("navigation privée");
+
+    fireEvent.keyDown(window, { key: "Escape" });
+    expect(screen.queryByRole("dialog")).toBeNull();
+
+    fireEvent.click(screen.getByRole("button", { name: /Comment ça marche/ }));
+    fireEvent.click(screen.getByRole("button", { name: "J'ai compris" }));
+    expect(screen.queryByRole("dialog")).toBeNull();
+  });
+});
