@@ -78,6 +78,12 @@ export function VerbApp() {
   const now = Date.now();
   const counts = countByStatus(ALL_KEYS, progress, now);
 
+  // Chaque changement d'écran ou nouvelle session repart du haut de la page
+  // (indispensable sur téléphone, où la liste des verbes est très longue).
+  useEffect(() => {
+    window.scrollTo({ top: 0 });
+  }, [tab, session]);
+
   const startWith = (indices: number[]) => {
     setSelected(new Set(indices));
     setSession((s) => s + 1);
@@ -89,7 +95,13 @@ export function VerbApp() {
   };
 
   return (
-    <div className="app-shell">
+    <div
+      className={[
+        "app-shell",
+        tab === "train" ? "is-training" : "",
+        tab === "choose" && selected.size > 0 ? "has-start-bar" : "",
+      ].join(" ")}
+    >
       <div className="app-ambient app-ambient-violet" aria-hidden="true" />
       <div className="app-ambient app-ambient-teal" aria-hidden="true" />
 
@@ -556,6 +568,18 @@ function Choose({
           </p>
         )}
       </section>
+
+      {selected.size > 0 && (
+        <div className="mobile-start-bar">
+          <span>
+            <strong>{selected.size}</strong> verbe{selected.size > 1 ? "s" : ""}{" "}
+            sélectionné{selected.size > 1 ? "s" : ""}
+          </span>
+          <button type="button" className="btn-primary" onClick={onStart}>
+            S'entraîner <span aria-hidden="true">→</span>
+          </button>
+        </div>
+      )}
     </>
   );
 }
