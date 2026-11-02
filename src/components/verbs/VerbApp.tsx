@@ -565,8 +565,17 @@ function Choose({
 
 /* ─────────────────────────────── Entraînement ────────────────────────────── */
 
-/** Un verbe raté peut revenir au plus deux fois dans la même session. */
-const MAX_REQUEUE = 2;
+/**
+ * Un verbe raté revient une seule fois, 3 ou 4 cartes plus tard, pour un
+ * deuxième essai d'entraînement : ce deuxième passage n'est pas évalué et ne
+ * modifie pas la progression (seule la première réponse compte).
+ */
+type Card = { v: Verb; retry: boolean };
+
+/** Position de réinsertion : 3 ou 4 cartes après la carte actuelle. */
+function retryPosition(idx: number, length: number, gap: number) {
+  return Math.min(idx + 1 + gap, length);
+}
 
 function Train({
   selected,
@@ -579,33 +588,48 @@ function Train({
   onBack: () => void;
   onRestart: (indices: number[]) => void;
 }) {
-  const [queue, setQueue] = useState<Verb[]>(() =>
-    shuffle([...selected].map((i) => VERBS[i]!).filter(Boolean)),
+  const [queue, setQueue] = useState<Card[]>(() =>
+    shuffle([...selected].map((i) => VERBS[i]!).filter(Boolean)).map((v) => ({
+      v,
+      retry: false,
+    })),
   );
   const [idx, setIdx] = useState(0);
   const [flipped, setFlipped] = useState(false);
   /** Résultat au premier passage de chaque verbe. */
   const [firstTry, setFirstTry] = useState<Record<string, boolean>>({});
-  const [requeued, setRequeued] = useState<Record<string, number>>({});
 
-  const v = queue[idx];
+  const card = queue[idx];
+  const v = card?.v;
+  const isRetry = card?.retry ?? false;
   const done = idx >= queue.length;
 
-  const grade = (knew: boolean) => {
-    if (!v || !flipped) return;
-    onAnswer(v.base, knew);
-    if (!(v.base in firstTry)) setFirstTry((r) => ({ ...r, [v.base]: knew }));
-    if (!knew && (requeued[v.base] ?? 0) < MAX_REQUEUE) {
-      setQueue((q) => [...q, v]);
-      setRequeued((r) => ({ ...r, [v.base]: (r[v.base] ?? 0) + 1 }));
-    }
+  const next = () => {
     setFlipped(false);
     setIdx((i) => i + 1);
+  };
+
+  const grade = (knew: boolean) => {
+    if (!v || !flipped || isRetry) return;
+    onAnswer(v.base, knew);
+    setFirstTry((r) => ({ ...r, [v.base]: knew }));
+    if (!knew) {
+      const gap = 3 + Math.floor(Math.random() * 2);
+      setQueue((q) => {
+        const at = retryPosition(idx, q.length, gap);
+        return [...q.slice(0, at), { v, retry: true }, ...q.slice(at)];
+      });
+    }
+    next();
   };
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (!flipped || e.metaKey || e.ctrlKey || e.altKey) return;
+      if (isRetry) {
+        if (e.key === "2" || e.key === "ArrowRight") next();
+        return;
+      }
       if (e.key === "1" || e.key === "ArrowLeft") grade(false);
       if (e.key === "2" || e.key === "ArrowRight") grade(true);
     };
@@ -713,7 +737,6 @@ function Train({
   }
 
   const pct = Math.round((idx / queue.length) * 100);
-  const isRetry = (requeued[v.base] ?? 0) > 0 && v.base in firstTry;
 
   return (
     <section className="train-view" aria-label="Entraînement par flashcards">
@@ -721,7 +744,9 @@ function Train({
         <div>
           <div className="training-mode">MODE FLASHCARDS</div>
           <p className="section-description">
-            Réfléchis, retourne la carte, puis dis honnêtement si tu savais.
+            {isRetry
+              ? "Deuxième essai pour t'entraîner : il ne compte pas dans ta progression."
+              : "Réfléchis, retourne la carte, puis dis honnêtement si tu savais."}
           </p>
         </div>
         <button type="button" className="btn-outline" onClick={onBack}>
@@ -758,7 +783,7 @@ function Train({
         <div className={`flip-card ${flipped ? "is-flipped" : ""}`}>
           <div className="flip-face flip-front">
             <span className="face-badge">
-              {isRetry ? "ON RÉESSAIE" : "TRADUCTION FRANÇAISE"}
+              {isRetry ? "DEUXIÈME ESSAI" : "TRADUCTION FRANÇAISE"}
             </span>
             <span className="face-word">{v.fr}</span>
             <span className="face-hint">
@@ -780,13 +805,29 @@ function Train({
               ))}
             </div>
             <span className="face-hint">
-              Écoute et répète les formes à voix haute
+              {isRetry
+                ? "Deuxième essai : il ne change pas ta progression"
+                : "Écoute et répète les formes à voix haute"}
             </span>
           </div>
         </div>
       </button>
 
-      {flipped ? (
+      {flipped && isRetry ? (
+        <div className="training-actions grade-actions">
+          <button
+            type="button"
+            className="btn-outline"
+            onClick={() => speak(v)}
+            aria-label="Écouter la prononciation"
+          >
+            <span aria-hidden="true">♫</span>
+          </button>
+          <button type="button" className="btn-primary" onClick={next}>
+            Suivante <span aria-hidden="true">→</span>
+          </button>
+        </div>
+      ) : flipped ? (
         <div className="training-actions grade-actions">
           <button
             type="button"
@@ -826,7 +867,9 @@ function Train({
         </div>
       )}
       <p className="keyboard-hint">
-        Clavier : ← ou 1 pour « À revoir », → ou 2 pour « Je savais »
+        {isRetry
+          ? "Clavier : → ou 2 pour passer à la carte suivante"
+          : "Clavier : ← ou 1 pour « À revoir », → ou 2 pour « Je savais »"}
       </p>
     </section>
   );

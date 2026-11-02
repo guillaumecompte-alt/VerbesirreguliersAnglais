@@ -88,3 +88,45 @@ describe("changement d'appareil", () => {
     expect(localStorage.getItem("iv-progress-v1")).toContain('"box":5');
   });
 });
+
+describe("verbe raté pendant une session", () => {
+  beforeEach(() => localStorage.clear());
+
+  it("revient 3 ou 4 cartes plus tard, sans évaluation ni effet sur la progression", async () => {
+    render(<VerbApp />);
+    await screen.findByText("TA PROGRESSION");
+    fireEvent.click(
+      screen.getByRole("button", { name: /Découvrir 10 nouveaux verbes/ }),
+    );
+
+    const flip = () =>
+      fireEvent.click(screen.getByRole("button", { name: /Voir la réponse/ }));
+    const saved = () =>
+      JSON.parse(localStorage.getItem("iv-progress-v1")!).verbs as Record<
+        string,
+        { box: number; seen: number }
+      >;
+
+    // Carte 1 : ratée.
+    flip();
+    fireEvent.click(screen.getByRole("button", { name: "À revoir" }));
+    const missed = Object.keys(saved()).find((k) => saved()[k]!.box === 0)!;
+    expect(screen.getByText(/CARTE/)).toHaveTextContent("/ 11");
+
+    // Les cartes suivantes sont réussies jusqu'au deuxième essai.
+    let card = 2;
+    while (!screen.queryByText("DEUXIÈME ESSAI")) {
+      flip();
+      fireEvent.click(screen.getByRole("button", { name: "Je savais" }));
+      card++;
+    }
+    expect([5, 6]).toContain(card);
+
+    // Deuxième essai : seulement « Suivante », et la progression ne bouge pas.
+    flip();
+    expect(screen.queryByRole("button", { name: "Je savais" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "À revoir" })).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: /Suivante/ }));
+    expect(saved()[missed]).toMatchObject({ box: 0, seen: 1 });
+  });
+});
